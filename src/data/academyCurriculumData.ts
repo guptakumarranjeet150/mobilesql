@@ -348,7 +348,131 @@ WHERE status = 'completed';`,
     badgeName: 'Data Analyst Pro',
     iconName: 'PieChart',
     colorHex: '#10B981',
-    modules: [],
+    modules: [
+      {
+        id: 'mod_stellar_analytics',
+        trackId: 'track_analytics',
+        title: 'Stellar Blockchain Data Analysis',
+        description: 'Query decentralized ledgers, account balances, asset payments, and Soroban smart contract events.',
+        iconName: 'Globe',
+        difficulty: 'Intermediate',
+        totalLessons: 3,
+        estimatedMinutes: 25,
+        xpReward: 350,
+        lessons: [
+          {
+            id: 'les_stellar_01',
+            title: 'Stellar Ledgers, Accounts & Transactions',
+            durationMinutes: 8,
+            xpReward: 100,
+            difficulty: 'Beginner',
+            summary: 'Explore the architecture of the Stellar ledger, sequence consensus, transaction fee structures, and account balances.',
+            databaseId: 'stellar_network',
+            readingMarkdown: `### Stellar Ledgers & Account Architecture
+The **Stellar Network** organizes state transitions into **ledgers**, which close every few seconds through the Stellar Consensus Protocol (SCP).
+
+#### Key Entities in Stellar SQL:
+- **stellar_ledgers**: Immutable blocks storing sequence numbers, closed timestamps, fee settings, and transaction counts.
+- **stellar_accounts**: Public key addresses holding native XLM balances, trustlines, signers, and flags.
+- **stellar_transactions**: Bundles of individual atomic operations signed by source accounts.`,
+            initialSql: `-- Inspect ledger block sequences and transaction metrics
+SELECT sequence, closed_at, transaction_count, operation_count, successful_transaction_count, failed_transaction_count 
+FROM stellar_ledgers 
+ORDER BY sequence ASC;`,
+            expectedQuery: `SELECT sequence, closed_at, transaction_count, operation_count, successful_transaction_count, failed_transaction_count FROM stellar_ledgers ORDER BY sequence ASC;`,
+            quiz: {
+              id: 'q_stellar_01',
+              question: 'In Stellar, what is the core atomic container that groups operations and pays a base fee?',
+              options: [
+                { id: 'a', text: 'Soroban Event', isCorrect: false, explanation: 'Events are emitted logs during execution.' },
+                { id: 'b', text: 'Transaction', isCorrect: true, explanation: 'Transactions are atomic containers holding 1 to 100 operations.' },
+                { id: 'c', text: 'Ledger Sequence', isCorrect: false, explanation: 'The ledger sequence identifies the closed block number.' },
+                { id: 'd', text: 'Trustline', isCorrect: false, explanation: 'Trustlines represent account balances for non-native assets.' },
+              ],
+              xpReward: 25,
+            },
+            bestPractices: [
+              'Always filter transactions by successful = true when analyzing active on-chain volume.',
+              'Use closed_at timestamps with DATE_TRUNC to aggregate network throughput by hour or day.',
+            ],
+          },
+          {
+            id: 'les_stellar_02',
+            title: 'Payment Flows & Asset Distribution',
+            durationMinutes: 8,
+            xpReward: 120,
+            difficulty: 'Intermediate',
+            summary: 'Aggregate payment volume, asset distribution, and anchor minting across decentralized Stellar assets.',
+            databaseId: 'stellar_network',
+            readingMarkdown: `### Cross-Border Payments & Asset Liquidity
+Stellar is designed for high-speed cross-border settlement. Assets are identified by an \`asset_code\` and an \`issuer_account\` public key.
+
+#### Payment Analytics Objectives:
+1. Aggregate total transfer volume per asset.
+2. Track counterparty flow between senders and recipients.
+3. Quantify liquidity across fiat-backed stablecoins (e.g. USDC, EURC) and native XLM.`,
+            initialSql: `-- Calculate total payment volume and counts grouped by asset code
+SELECT asset_code, COUNT(*) AS payment_count, SUM(amount) AS total_volume 
+FROM stellar_payments 
+GROUP BY asset_code 
+ORDER BY total_volume DESC;`,
+            expectedQuery: `SELECT asset_code, COUNT(*) AS payment_count, SUM(amount) AS total_volume FROM stellar_payments GROUP BY asset_code ORDER BY total_volume DESC;`,
+            quiz: {
+              id: 'q_stellar_02',
+              question: 'Why does Stellar pair non-native assets with an issuer_account address?',
+              options: [
+                { id: 'a', text: 'To uniquely identify which anchor issued the credit', isCorrect: true, explanation: 'Anyone can mint a token with symbol USDC, so the issuer_account ensures cryptographic provenance.' },
+                { id: 'b', text: 'To pay validator fees in tokens', isCorrect: false, explanation: 'Fees on Stellar are paid in native XLM.' },
+                { id: 'c', text: 'To encrypt memo fields', isCorrect: false, explanation: 'Memos are independent transaction metadata fields.' },
+                { id: 'd', text: 'To slow down malicious transactions', isCorrect: false, explanation: 'The issuer address identifies trustlines and reserves.' },
+              ],
+              xpReward: 25,
+            },
+            bestPractices: [
+              'Join stellar_payments with stellar_assets on asset_code to verify token types.',
+              'Watch out for null issuer_account when querying the native XLM token.',
+            ],
+          },
+          {
+            id: 'les_stellar_03',
+            title: 'Soroban Smart Contracts & Event Frequency',
+            durationMinutes: 9,
+            xpReward: 130,
+            difficulty: 'Advanced',
+            summary: 'Join Soroban contract registries with ledger event streams to measure invocation frequency and decentralized application performance.',
+            databaseId: 'stellar_network',
+            readingMarkdown: `### Soroban Smart Contract Architecture
+**Soroban** is Stellar's Rust-based WebAssembly (WASM) smart contract platform.
+
+#### Key Tables in Soroban Analytics:
+- **soroban_contracts**: Stores contract identifiers, creator addresses, deployed ledger heights, and cumulative invocation counters.
+- **soroban_events**: Real-time diagnostic and contract state emission logs with structured topics and event types (e.g. trade_executed, yield_distributed).`,
+            initialSql: `-- Correlate Soroban contracts with their emitted events
+SELECT c.contract_id, c.contract_type, c.invocation_count, COUNT(e.event_id) AS event_count 
+FROM soroban_contracts c 
+LEFT JOIN soroban_events e ON c.contract_id = e.contract_id 
+GROUP BY c.contract_id, c.contract_type, c.invocation_count 
+ORDER BY event_count DESC;`,
+            expectedQuery: `SELECT c.contract_id, c.contract_type, c.invocation_count, COUNT(e.event_id) AS event_count FROM soroban_contracts c LEFT JOIN soroban_events e ON c.contract_id = e.contract_id GROUP BY c.contract_id, c.contract_type, c.invocation_count ORDER BY event_count DESC;`,
+            quiz: {
+              id: 'q_stellar_03',
+              question: 'Why is a LEFT JOIN preferred when aggregating contracts and emitted events?',
+              options: [
+                { id: 'a', text: 'To ensure freshly deployed contracts with zero events are still included', isCorrect: true, explanation: 'An INNER JOIN would discard inactive or newly created contracts.' },
+                { id: 'b', text: 'To speed up SQL sorting', isCorrect: false, explanation: 'Joins do not automatically index sort orders.' },
+                { id: 'c', text: 'Because Soroban does not support primary keys', isCorrect: false, explanation: 'Contracts have unique contract_id strings.' },
+                { id: 'd', text: 'To enforce cryptographic signatures', isCorrect: false, explanation: 'SQL queries analyze read-only ledger data.' },
+              ],
+              xpReward: 25,
+            },
+            bestPractices: [
+              'Use COUNT(e.event_id) rather than COUNT(*) with LEFT JOINs to avoid counting ghost NULL rows.',
+              'Filter by event topic to inspect specific operational conditions like liquidations or grant disbursements.',
+            ],
+          },
+        ],
+      },
+    ],
   },
   {
     id: 'track_interview',

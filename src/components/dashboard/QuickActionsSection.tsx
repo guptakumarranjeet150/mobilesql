@@ -9,6 +9,7 @@ import {
   FileText,
   Briefcase,
   Grid,
+  Globe,
 } from 'lucide-react';
 import { SectionTitle } from '../layout/Headers';
 import { useUIStore } from '../../stores/useUIStore';
@@ -17,6 +18,16 @@ export const QuickActionsSection: React.FC = () => {
   const { setActiveTab, setCopilotOpen, setSqlGeneratorOpen, addToast } = useUIStore();
 
   const ACTIONS = [
+    {
+      id: 'action_stellar_lab',
+      label: 'Stellar Data Lab',
+      description: 'Blockchain & Soroban SQL analytics',
+      icon: <Globe className="w-5 h-5 text-[#3B82F6]" />,
+      onClick: () => {
+        setActiveTab('stellar-lab');
+        addToast({ title: 'Stellar Data Lab', message: 'Decentralized ledger analytics active.', type: 'info' });
+      },
+    },
     {
       id: 'action_playground',
       label: 'SQL Playground',

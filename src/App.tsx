@@ -22,6 +22,7 @@ import { LandingPageView } from './components/landing/LandingPageView';
 import { DocsHubView } from './components/docs/DocsHubView';
 import { AdminDashboardView } from './components/admin/AdminDashboardView';
 import { DatasetBuilderView } from './components/dataset/DatasetBuilderView';
+import { StellarDataLabView } from './components/stellar/StellarDataLabView';
 import { LoginPage } from './components/auth/LoginPage';
 import { RegisterPage } from './components/auth/RegisterPage';
 import { ForgotPasswordPage } from './components/auth/ForgotPasswordPage';
@@ -58,6 +59,14 @@ function ActiveTabContent() {
 
   if (activeTab === 'challenges') {
     return <ChallengesView />;
+  }
+
+  if (activeTab === 'stellar-lab') {
+    return (
+      <main className="p-4 sm:p-6 max-w-7xl mx-auto space-y-8 font-sans">
+        <StellarDataLabView />
+      </main>
+    );
   }
 
   if (activeTab === 'dataset-builder' || activeTab === 'sql-lab') {

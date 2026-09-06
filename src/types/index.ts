@@ -142,6 +142,7 @@ export type ActiveTab =
   | 'dashboard'
   | 'academy'
   | 'playground'
+  | 'stellar-lab'
   | 'challenges'
   | 'dataset-builder'
   | 'sql-lab'

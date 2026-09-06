@@ -23,6 +23,58 @@ const SQL_DATA_TYPES = new Set([
   'CHAR', 'STRING', 'TEXT', 'DATE', 'DATETIME', 'TIMESTAMP', 'BOOLEAN', 'BOOL', 'JSON', 'BLOB',
 ]);
 
+function registerClientAlasqlExtensions() {
+  let rankCounter = 0;
+  let rowCounter = 0;
+
+  (alasql as any).fn.DENSE_RANK = function() {
+    rankCounter++;
+    return rankCounter;
+  };
+  (alasql as any).fn.dense_rank = (alasql as any).fn.DENSE_RANK;
+
+  (alasql as any).fn.ROW_NUMBER = function() {
+    rowCounter++;
+    return rowCounter;
+  };
+  (alasql as any).fn.row_number = (alasql as any).fn.ROW_NUMBER;
+
+  (alasql as any).fn.RANK = function() {
+    rankCounter++;
+    return rankCounter;
+  };
+  (alasql as any).fn.rank = (alasql as any).fn.RANK;
+
+  (alasql as any).fn.DATE_TRUNC = function(unit: string, date: any) {
+    if (!date) return null;
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return String(date).slice(0, 10);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    if (unit && unit.toLowerCase() === 'day') {
+      return `${y}-${m}-${day}`;
+    }
+    if (unit && unit.toLowerCase() === 'year') {
+      return `${y}-01-01`;
+    }
+    return `${y}-${m}-01`;
+  };
+  (alasql as any).fn.date_trunc = (alasql as any).fn.DATE_TRUNC;
+
+  (alasql as any).fn.TO_CHAR = function(date: any, format: string) {
+    if (!date) return '';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return String(date).slice(0, 7);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    return `${y}-${m}`;
+  };
+  (alasql as any).fn.to_char = (alasql as any).fn.TO_CHAR;
+}
+
+registerClientAlasqlExtensions();
+
 function prepareClientQueryForAlasql(sql: string): string {
   return sql.replace(/\bAS\s+([a-zA-Z_][a-zA-Z0-9_]*)\b/gi, (match, p1) => {
     if (SQL_DATA_TYPES.has(p1.toUpperCase())) {

@@ -258,6 +258,7 @@ const SIDEBAR_ITEMS: SidebarMenuItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Core' },
   { id: 'academy', label: 'Academy', icon: BookOpen, badge: '12 Modules', group: 'Core' },
   { id: 'playground', label: 'SQL Playground', icon: Terminal, badge: 'Sandbox', group: 'Core' },
+  { id: 'stellar-lab', label: 'Stellar Data Lab', icon: Globe, badge: 'Stellar', group: 'Core' },
   { id: 'dataset-builder', label: 'AI Dataset Builder', icon: Layers, badge: 'STEP 12', group: 'Core' },
   { id: 'sql-lab', label: 'SQL Laboratory', icon: Database, badge: 'EXPLAIN', group: 'Core' },
   { id: 'challenges', label: 'Challenges', icon: Zap, badge: 'Daily', group: 'Core' },

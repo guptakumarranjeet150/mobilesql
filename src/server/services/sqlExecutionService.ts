@@ -106,9 +106,16 @@ export class SqlExecutionService {
     (alasql as any).fn.DATE_TRUNC = function(unit: string, date: any) {
       if (!date) return null;
       const d = new Date(date);
-      if (isNaN(d.getTime())) return String(date).slice(0, 7) + '-01';
+      if (isNaN(d.getTime())) return String(date).slice(0, 10);
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      if (unit && unit.toLowerCase() === 'day') {
+        return `${y}-${m}-${day}`;
+      }
+      if (unit && unit.toLowerCase() === 'year') {
+        return `${y}-01-01`;
+      }
       return `${y}-${m}-01`;
     };
     (alasql as any).fn.date_trunc = (alasql as any).fn.DATE_TRUNC;

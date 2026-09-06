@@ -54,7 +54,52 @@ export const AIAssistantPanel: React.FC = () => {
       let responseText = '';
       let generatedSql = '';
 
-      if (userQuery.toLowerCase().includes('explain')) {
+      const isStellarContext =
+        activeTab?.databaseId === 'stellar_network' ||
+        userQuery.toLowerCase().includes('stellar') ||
+        userQuery.toLowerCase().includes('soroban') ||
+        userQuery.toLowerCase().includes('ledger');
+
+      if (isStellarContext) {
+        if (userQuery.toLowerCase().includes('soroban') || userQuery.toLowerCase().includes('contract')) {
+          responseText = `### Soroban Smart Contract Analysis
+This query joins Soroban smart contracts with emitted runtime event logs, grouping by contract type and ordering by event frequency.`;
+          generatedSql = `-- Soroban Contract Invocation & Event Activity
+SELECT 
+  c.contract_id,
+  c.contract_type,
+  c.invocation_count,
+  COUNT(e.event_id) AS event_count
+FROM soroban_contracts c
+LEFT JOIN soroban_events e ON c.contract_id = e.contract_id
+GROUP BY c.contract_id, c.contract_type, c.invocation_count
+ORDER BY event_count DESC;`;
+        } else if (userQuery.toLowerCase().includes('payment') || userQuery.toLowerCase().includes('asset') || userQuery.toLowerCase().includes('volume')) {
+          responseText = `### Stellar Asset Payment Volume
+This query aggregates cross-border payments by asset symbol to analyze liquidity and transfer volume on the Stellar ledger.`;
+          generatedSql = `-- Stellar Payment Volume Leaderboard
+SELECT 
+  asset_code,
+  COUNT(*) AS payment_count,
+  SUM(amount) AS total_volume,
+  ROUND(AVG(amount), 2) AS avg_transfer_size
+FROM stellar_payments
+GROUP BY asset_code
+ORDER BY total_volume DESC;`;
+        } else {
+          responseText = `### Stellar Ledger Sequence & Throughput
+Analyzing block heights, operation counts, and transaction success rates across closed Stellar ledgers.`;
+          generatedSql = `-- Stellar Ledger Throughput Metrics
+SELECT 
+  sequence,
+  closed_at,
+  transaction_count,
+  operation_count,
+  successful_transaction_count
+FROM stellar_ledgers
+ORDER BY sequence ASC;`;
+        }
+      } else if (userQuery.toLowerCase().includes('explain')) {
         responseText = `### Query Analysis
 1. **CTE / Subquery**: Evaluates \`MonthlyRevenue\` to partition sales by country.
 2. **Window Function**: Calculates cumulative order values using \`SUM() OVER (ORDER BY created_at)\`.

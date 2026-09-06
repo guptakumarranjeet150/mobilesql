@@ -202,4 +202,104 @@ ORDER BY month ASC;`,
     ],
     interviewTip: 'Conditional aggregation with SUM(CASE...) is one of the most tested techniques in FinTech and SaaS analytics interviews.',
   },
+  {
+    id: 'ch_04',
+    title: 'Stellar Top Payment Volume Assets',
+    slug: 'stellar-top-payment-volume-assets',
+    difficulty: 'Intermediate',
+    category: 'Aggregation',
+    companyTags: ['Stellar', 'FinTech', 'Web3'],
+    passRatePercentage: 48,
+    pointsReward: 130,
+    estimatedTimeMins: 15,
+    databaseId: 'stellar_network',
+    descriptionMarkdown: `### Stellar Top Payment Volume Assets
+
+Analyze payment volume across different Stellar assets in the network ledger history.
+
+Write a query to calculate:
+- \`asset_code\`: The Stellar asset symbol
+- \`payment_count\`: Number of payments executed with this asset
+- \`total_volume\`: Total amount transferred
+
+#### Requirements:
+- Aggregate from \`stellar_payments\`.
+- Order by \`total_volume\` DESC, \`asset_code\` ASC.`,
+    initialSql: `-- Write your SQL for Stellar asset payment volume
+SELECT * FROM stellar_payments LIMIT 5;`,
+    solutionSql: `SELECT 
+  asset_code,
+  COUNT(*) AS payment_count,
+  SUM(amount) AS total_volume
+FROM stellar_payments
+GROUP BY asset_code
+ORDER BY total_volume DESC, asset_code ASC;`,
+    testCases: [
+      {
+        id: 'tc_stellar_1',
+        name: 'Asset Volume Leaderboard',
+        description: 'Check aggregation and sorting by volume',
+        expectedRowCount: 5,
+        expectedFirstRow: { asset_code: 'AQUA' },
+      },
+    ],
+    hints: [
+      'Group by asset_code.',
+      'Use SUM(amount) for total volume and COUNT(*) for count.',
+      'Sort with ORDER BY total_volume DESC.',
+    ],
+    interviewTip: 'Blockchain analytics frequently groups ledger payments by asset to calculate decentralized volume and anchor liquidity metrics.',
+  },
+  {
+    id: 'ch_05',
+    title: 'Soroban Smart Contract Invocations & Event Frequency',
+    slug: 'soroban-smart-contract-invocations-and-events',
+    difficulty: 'Advanced',
+    category: 'Joins',
+    companyTags: ['Stellar', 'Soroban', 'Web3'],
+    passRatePercentage: 39,
+    pointsReward: 160,
+    estimatedTimeMins: 20,
+    databaseId: 'stellar_network',
+    descriptionMarkdown: `### Soroban Smart Contract Activity & Events
+
+Analyze Soroban smart contract performance and emitted runtime events.
+
+Write a query to calculate:
+- \`contract_id\`: The contract identifier
+- \`contract_type\`: Functionality type (AMM, Oracle, Staking, etc.)
+- \`invocation_count\`: Recorded contract invocations
+- \`event_count\`: Emitted runtime events count
+
+#### Requirements:
+- Join \`soroban_contracts\` with \`soroban_events\` using a \`LEFT JOIN\` so contracts with zero events are still included.
+- Group by \`contract_id\`, \`contract_type\`, and \`invocation_count\`.
+- Order by \`event_count\` DESC, \`invocation_count\` DESC.`,
+    initialSql: `-- Write your Soroban analysis query below
+SELECT * FROM soroban_contracts LIMIT 5;`,
+    solutionSql: `SELECT 
+  c.contract_id,
+  c.contract_type,
+  c.invocation_count,
+  COUNT(e.event_id) AS event_count
+FROM soroban_contracts c
+LEFT JOIN soroban_events e ON c.contract_id = e.contract_id
+GROUP BY c.contract_id, c.contract_type, c.invocation_count
+ORDER BY event_count DESC, c.invocation_count DESC;`,
+    testCases: [
+      {
+        id: 'tc_stellar_2',
+        name: 'Soroban Activity Join',
+        description: 'Verify LEFT JOIN and event count calculation',
+        expectedRowCount: 5,
+        expectedFirstRow: { contract_id: 'CAQUA_AMM_ROUTER_V1_8X9Y7Z6A5B4C3D2E1F0G9H8J7K6L5M4N3P2Q1R0S', event_count: 5 },
+      },
+    ],
+    hints: [
+      'Use a LEFT JOIN between soroban_contracts and soroban_events on contract_id.',
+      'Count the event identifier COUNT(e.event_id) rather than COUNT(*) to avoid counting null joined rows.',
+      'Group by contract_id, contract_type, invocation_count.',
+    ],
+    interviewTip: 'When joining parent-child records in smart contract analytics, prefer COUNT(foreign_table.id) over COUNT(*) to preserve zero-event metrics accurately.',
+  },
 ];
